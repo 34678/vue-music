@@ -13,7 +13,7 @@ import VueLazyload from 'vue-lazyload'
 fastclick.attach(document.body)
 
 Vue.use(VueLazyload, {
-  // loading: require('common/image/default.png')
+  loading: require('common/image/default.png')
 })
 
 Vue.config.productionTip = false
@@ -23,5 +23,5 @@ new Vue({
   el: '#app',
   router,
   template: '<App/>',
-  components: { App }
+  components: {App}
 })

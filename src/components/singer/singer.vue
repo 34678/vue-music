@@ -1,6 +1,6 @@
 <template>
   <div class="singer" ref="singer">
-    <div ref="list"></div>
+    <list-view :data="singers"></list-view>
   </div>
 </template>
 
@@ -8,6 +8,7 @@
   import {getSingerList} from 'api/singer'
   import {ERR_OK} from 'api/config'
   import Singer from 'common/js/singer'
+  import listView from 'base/listView/listView'
 
   const HOT_SINGER_LEN = 10
   const HOT_NAME = '热门'
@@ -83,14 +84,16 @@
         return hot.concat(ret)
       }
     },
-    components: {}
+    components: {
+      listView
+    }
   }
 </script>
 
 <style scoped lang="stylus" rel="stylesheet/stylus">
   .singer
     position: fixed
-    top: 88px
+    top: 156px
     bottom: 0
     width: 100%
 </style>
