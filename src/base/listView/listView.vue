@@ -27,6 +27,9 @@
     </div>
     <div v-show="!data.length" class="loading-container">
     </div>
+    <div class="list-fixed" v-show="fixedTitle" ref="fixed">
+      <div class="fixed-title">{{fixedTitle}}</div>
+    </div>
   </scroll>
 </template>
 
@@ -35,8 +38,10 @@
   import {getData} from 'common/js/dom'
 
   const ANCHOR_HEIGHT = 18 // 一个锚点的高度
+  const TITLE_HEIGHT = 30 // fixtitle的高度
   export default {
     props: {
+      // 用于父组件传进来的数据
       data: {
         type: Array,
         default: []
@@ -49,13 +54,18 @@
         })
       },
       fixedTitle() {
-
+        // 没有向下进行滚动
+        if (this.scrollY) {
+          return ''
+        }
+        return this.data[this.currentIndex] ? this.data[this.currentIndex].title : ''
       }
     },
     data() {
       return {
         scrollY: -1,
-        currentIndex: 0
+        currentIndex: 0,
+        diff: -1
       }
     },
     created() {
@@ -137,7 +147,7 @@
           if (-newY >= height1 && -newY < height2) {
             this.currentIndex = i
             // diff???
-            this.diff = height2 + newY
+            this.diff = height2 + newY // 因为newY是负值 所以计算出来的值是这个区间的下边界到顶部的距离
             return
           }
         }
@@ -145,7 +155,13 @@
         this.currentIndex = listHeight.length - 2
       },
       diff(newVal) {
-
+        // 上滑的距离小于fixedtitle的高度了 --- 向上平移重合的距离
+        let fixedTop = (newVal > 0 && newVal < TITLE_HEIGHT) ? newVal - TITLE_HEIGHT : 0
+        if (this.fixedTop === fixedTop) {
+          return
+        }
+        // 在Y轴方向平移 向上平移 因为是负数
+        this.$refs.fixed.style.transform = `translate3d(0,${fixedTop} px,0)`
       }
     },
     components: {
