@@ -8,6 +8,7 @@ import 'babel-polyfill'
 import fastclick from 'fastclick'
 import 'common/stylus/index.styl'
 import VueLazyload from 'vue-lazyload'
+import store from './store'
 
 // body 下面的点击没有300ms的延迟
 fastclick.attach(document.body)
@@ -22,6 +23,7 @@ Vue.config.productionTip = false
 new Vue({
   el: '#app',
   router,
+  store,
   template: '<App/>',
   components: {App}
 })
