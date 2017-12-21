@@ -21,7 +21,7 @@
     <div class="list-shortcut" @touchstart="onShortcutTouchStart" @touchmove.stop.prevent="onShortcutTouchMove">
       <ul>
         <li v-for="(item, index) in shortcutList" :data-index="index" class="item"
-            :class="{'current':currentIndex == index}">{{item}}
+            :class="{'current':currentIndex === index}">{{item}}
         </li>
       </ul>
     </div>
@@ -69,7 +69,7 @@
 
       },
       onShortcutTouchStart(e) {
-        let anchorIndex = getData(e.target, 'index')
+        let anchorIndex = parseInt(getData(e.target, 'index'))
         // 赋值给touch数据对象  我们可以检测华东的状况 并且在其它函数调用
         let firstTouch = e.touches[0]
         this.touch.y1 = firstTouch.pageY
@@ -103,9 +103,16 @@
         }
       },
       _scrollTo(index) {
+        // 等同于index ！==null
         if (!index && index !== 0) {
           return
         }
+        if (index < 0) {
+          index = 0
+        } else if (index > this.listHeight.length - 2) {
+          index = this.listHeight.length - 2
+        }
+        this.scrollY = -this.listHeight[index]
         // 第二个参数为什么是0 先不用管
         this.$refs.listview.scrollToElement(this.$refs.listGroup[index], 0)
       }
@@ -127,7 +134,7 @@
         for (let i = 0; i < listHeight.length - 1; i++) {
           let height1 = listHeight[i]
           let height2 = listHeight[i + 1]
-          if (-newY >= height1 && -newY <= height2) {
+          if (-newY >= height1 && -newY < height2) {
             this.currentIndex = i
             // diff???
             this.diff = height2 + newY
