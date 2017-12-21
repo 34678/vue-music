@@ -1,11 +1,14 @@
 <template>
   <transition name="slide">
-   jrhejgheh
+  <div  class="singer-detail">
+             aaaa
+  </div>
   </transition>
 </template>
 
-<script type="text/ecmascript-6">
+<script>
   export default {
+    name: 'singer-detail'
   }
 </script>
 
@@ -15,4 +18,13 @@
 
   .slide-enter, .slide-leave-to
     transform: translate3d(100%, 0, 0)
+  .singer-detail
+    position:fixed
+    z-index:100
+    left:0
+    right:0
+    top:0
+    bottom:0
+    background:black
+    color:white
 </style>
