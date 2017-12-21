@@ -28,7 +28,10 @@
     <div v-show="!data.length" class="loading-container">
     </div>
     <div class="list-fixed" v-show="fixedTitle" ref="fixed">
-      <div class="fixed-title">{{fixedTitle}}</div>
+      <h1 class="fixed-title">{{fixedTitle}}</h1>
+    </div>
+    <div v-show="!data.length" class="loading-container">
+      <loading></loading>
     </div>
   </scroll>
 </template>
@@ -36,7 +39,7 @@
 <script type="text/ecmascript-6">
   import Scroll from 'base/scroll/scroll'
   import {getData} from 'common/js/dom'
-
+  import loading from 'base/loading/loading'
   const ANCHOR_HEIGHT = 18 // 一个锚点的高度
   const TITLE_HEIGHT = 30 // fixtitle的高度
   export default {
@@ -55,7 +58,7 @@
       },
       fixedTitle() {
         // 没有向下进行滚动
-        if (this.scrollY) {
+        if (this.scrollY > 0) {
           return ''
         }
         return this.data[this.currentIndex] ? this.data[this.currentIndex].title : ''
@@ -160,12 +163,14 @@
         if (this.fixedTop === fixedTop) {
           return
         }
+        this.fixedTop = fixedTop
         // 在Y轴方向平移 向上平移 因为是负数
-        this.$refs.fixed.style.transform = `translate3d(0,${fixedTop} px,0)`
+        this.$refs.fixed.style.transform = `translate3d(0,${fixedTop}px,0)`
       }
     },
     components: {
-      Scroll
+      Scroll,
+      loading
     }
   }
 </script>
