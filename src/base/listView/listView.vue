@@ -11,7 +11,7 @@
           {{group.title}}
         </h2>
         <ul>
-          <li v-for="item in group.items" class="list-group-item">
+          <li @click="selectItem(item)" v-for="item in group.items" class="list-group-item">
             <img class="avatar" v-lazy="item.avatar"/>
             <span class="name">{{item.name}}</span>
           </li>
@@ -40,6 +40,7 @@
   import Scroll from 'base/scroll/scroll'
   import {getData} from 'common/js/dom'
   import loading from 'base/loading/loading'
+
   const ANCHOR_HEIGHT = 18 // 一个锚点的高度
   const TITLE_HEIGHT = 30 // fixtitle的高度
   export default {
@@ -79,7 +80,7 @@
     },
     methods: {
       selectItem(item) {
-
+        this.$emit('select', item)
       },
       onShortcutTouchStart(e) {
         let anchorIndex = parseInt(getData(e.target, 'index'))
