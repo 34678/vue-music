@@ -1,5 +1,10 @@
 <template>
-  <scroll class="listview" :data="data" ref="listview">
+  <scroll class="listview"
+          :data="data"
+          ref="listview"
+          @scroll="scroll"
+          :listen-scroll="listenScroll"
+          :probe-type="probeType">
     <ul>
       <li v-for="group in data" class="list-group" ref="listGroup">
         <h2 class="list-group-title">
@@ -14,7 +19,11 @@
       </li>
     </ul>
     <div class="list-shortcut" @touchstart="onShortcutTouchStart" @touchmove.stop.prevent="onShortcutTouchMove">
-      <ul v-for="(item, index) in shortcutList" :data-index="index" class="item">{{item}}</ul>
+      <ul>
+        <li v-for="(item, index) in shortcutList" :data-index="index" class="item"
+            :class="{'current':currentIndex == index}">{{item}}
+        </li>
+      </ul>
     </div>
     <div v-show="!data.length" class="loading-container">
     </div>
@@ -44,10 +53,16 @@
       }
     },
     data() {
-      return {}
+      return {
+        scrollY: -1,
+        currentIndex: 0
+      }
     },
     created() {
       this.touch = {}
+      this.listenScroll = true
+      this.probeType = 3
+      this.listHeight = []
     },
     methods: {
       selectItem(item) {
@@ -73,22 +88,54 @@
 
       },
       scroll(pos) {
-
+        this.scrollY = pos.y
       },
       _calculateHeight() {
-
+        // 0+存储每个字母组的距离顶部高度的数组
+        this.listHeight = []
+        const list = this.$refs.listGroup
+        let height = 0
+        this.listHeight.push(height)
+        for (let i = 0; i < list.length; i++) {
+          let item = list[i]
+          height += item.clientHeight
+          this.listHeight.push(height)
+        }
       },
       _scrollTo(index) {
+        if (!index && index !== 0) {
+          return
+        }
         // 第二个参数为什么是0 先不用管
         this.$refs.listview.scrollToElement(this.$refs.listGroup[index], 0)
       }
     },
     watch: {
       data() {
-
+        setTimeout(() => {
+          this._calculateHeight()
+        }, 20)
       },
       scrollY(newY) {
-
+        const listHeight = this.listHeight
+        // 滚动到顶部 滚动到中间
+        if (newY > 0) {
+          this.currentIndex = 0
+          return
+        }
+        // 滚动到底部，0-最后一个
+        for (let i = 0; i < listHeight.length - 1; i++) {
+          let height1 = listHeight[i]
+          let height2 = listHeight[i + 1]
+          if (-newY >= height1 && -newY <= height2) {
+            this.currentIndex = i
+            // diff???
+            this.diff = height2 + newY
+            return
+          }
+        }
+        // 而且-newY在最后一个元素上面的下面 现实的是最后一个快速入口“Z”  -2是因为左边的listheight比右边的快速入口多一个
+        this.currentIndex = listHeight.length - 2
       },
       diff(newVal) {
 
