@@ -54,7 +54,8 @@
           if (index < HOT_SINGER_LEN) {
             map.hot.items.push(new Singer({
               name: item.Fsinger_name,
-              id: item.Fsinger_mid
+              id: item.Fsinger_id,
+              mid: item.Fsinger_mid
             }))
           }
           const key = item.Findex
@@ -66,7 +67,8 @@
           }
           map[key].items.push(new Singer({
             name: item.Fsinger_name,
-            id: item.Fsinger_mid
+            id: item.Fsinger_id,
+            mid: item.Fsinger_mid
           }))
         })
         // 为了得到有序列表，我们需要处理 map

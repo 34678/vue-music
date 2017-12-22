@@ -1,8 +1,6 @@
 <template>
   <transition name="slide">
-    <div class="singer-detail">
-      aaaa
-    </div>
+    <music-list :title="title" :bg-image="bgImage" :songs="songs"></music-list>
   </transition>
 </template>
 
@@ -11,10 +9,17 @@
   import {getSingerDetail} from 'api/singer'
   import {ERR_OK} from 'api/config'
   import {createSong} from 'common/js/song'
+  import MusicList from 'components/music-list/music-list'
 
   export default {
     name: 'singer-detail',
     computed: {
+      title() {
+        return this.singer.name
+      },
+      bgImage() {
+        return this.singer.avatar
+      },
       ...mapGetters([
         'singer'
       ])
@@ -30,7 +35,7 @@
     methods: {
       _getDetail() {
         if (!this.singer.id) {
-          this.singer.id = 'this.singer.id'
+          this.singer.id = '60505'
         }
         getSingerDetail(this.singer.id).then((res) => {
           if (res.code === ERR_OK) {
@@ -49,6 +54,9 @@
         })
         return ret
       }
+    },
+    components: {
+      MusicList
     }
   }
 </script>
