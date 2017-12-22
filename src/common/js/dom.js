@@ -32,7 +32,7 @@ let ventor = (() => {
     standard: 'transform'
   }
   for (let key in transformNames) {
-    if (elementStyle[elementStyle[transformNames[key]]] !== undefined) {
+    if (elementStyle[transformNames[key]] !== undefined) {
       return key
     }
   }
