@@ -12,10 +12,41 @@ export function addClass(el, className) {
   newClass.push(className)
   el.className = newClass.join(' ')
 }
+
 export function getData(el, name, val) {
   const prefix = 'data-'
   if (val) {
     return el.setAttribute(prefix + name, val)
   }
   return el.getAttribute(prefix + name)
+}
+
+let elementStyle = document.createElement('div').style
+
+let ventor = (() => {
+  let transformNames = {
+    webkit: 'webkitTransform',
+    Moz: 'MozTransform',
+    O: 'OTransform',
+    ms: 'msTransform',
+    standard: 'transform'
+  }
+  for (let key in transformNames) {
+    if (elementStyle[elementStyle[transformNames[key]]] !== undefined) {
+      return key
+    }
+  }
+
+  return false
+})()
+
+export function prefixStyle(style) {
+  if (ventor === false) {
+    return false
+  }
+  if (ventor === 'standard') {
+    return style
+  }
+
+  return ventor + style.charAt(0).toUpperCase() + style.substr(1)
 }

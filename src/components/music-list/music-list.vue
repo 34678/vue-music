@@ -24,7 +24,9 @@
 <script type="text/ecmascript-6">
   import Scroll from 'base/scroll/scroll'
   import SongList from 'base/song-list/song-list'
+  import {prefixStyle} from 'common/js/dom'
 
+  const transform = prefixStyle('transform')
   // 歌星标题的高度
   const RESERVED_HEIGHT = 40
   export default {
@@ -71,8 +73,7 @@
           scale = 1 + percent
           zIndex = 10
         }
-        this.$refs.layer.style['transform'] = `translate3d(0,${translateY}px,0)`
-        this.$refs.layer.style['webkitTransform'] = `translate3d(0,${translateY}px,0)`
+        this.$refs.layer.style[transform] = `translate3d(0,${translateY}px,0)`
         if (newVal < this.minTranslateY) {
           zIndex = 10
           this.$refs.bgImage.style.paddingTop = 0
@@ -81,8 +82,7 @@
           this.$refs.bgImage.style.paddingTop = '70%'
           this.$refs.bgImage.style.height = 0
         }
-        this.$refs.bgImage.style['transform'] = `scale(${scale})`
-        this.$refs.bgImage.style['webkitTransform'] = `scale(${scale})`
+        this.$refs.bgImage.style[transform] = `scale(${scale})`
         this.$refs.bgImage.style.zIndex = zIndex
       }
     },
