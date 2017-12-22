@@ -59,13 +59,18 @@
     methods: {
       scroll(pos) {
         this.scrollY = pos.y
-        console.log(this.scrollY)
       }
     },
     watch: {
       scrollY(newVal) {
         let translateY = Math.max(this.minTranslateY, newVal)
         let zIndex = 0
+        let scale = 1
+        const percent = Math.abs(newVal / this.imageHeight)
+        if (newVal > 0) {
+          scale = 1 + percent
+          zIndex = 10
+        }
         this.$refs.layer.style['transform'] = `translate3d(0,${translateY}px,0)`
         this.$refs.layer.style['webkitTransform'] = `translate3d(0,${translateY}px,0)`
         if (newVal < this.minTranslateY) {
@@ -76,6 +81,8 @@
           this.$refs.bgImage.style.paddingTop = '70%'
           this.$refs.bgImage.style.height = 0
         }
+        this.$refs.bgImage.style['transform'] = `scale(${scale})`
+        this.$refs.bgImage.style['webkitTransform'] = `scale(${scale})`
         this.$refs.bgImage.style.zIndex = zIndex
       }
     },
