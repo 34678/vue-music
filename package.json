@@ -11,6 +11,7 @@
     "build": "node build/build.js"
   },
   "dependencies": {
+    "create-keyframe-animation": "^0.1.0",
     "vuex": "^2.3.1",
     "vue-lazyload": "1.0.3",
     "babel-runtime": "^6.0.0",
