@@ -38,7 +38,8 @@
             <span class="time time-r">{{format(currentSong.duration)}}</span>
           </div>
           <div class="operators">
-            <div class="icon i-left">
+            <div class="icon i-left" @click="changeMode">
+              <i :class="iconMode"></i>
             </div>
             <div class="icon i-left" :class="disableCls">
               <i @click="prev" class="icon-prev"></i>
@@ -67,7 +68,7 @@
         </div>
         <div class="control">
           <progress-circle :radius="radius" :percent="percent">
-          <i @click.stop="togglePlaying" class="icon-mini" :class="miniIcon"></i>
+            <i @click.stop="togglePlaying" class="icon-mini" :class="miniIcon"></i>
           </progress-circle>
         </div>
         <div class="control">
@@ -77,7 +78,8 @@
         </div>
       </div>
     </transition>
-    <audio ref="audio" :src="currentSong.url" @canplay="ready" @error="error" @timeupdate="updateTime"></audio>
+    <audio ref="audio" :src="currentSong.url" @canplay="ready" @error="error" @timeupdate="updateTime"
+           @ended="end"></audio>
   </div>
 </template>
 
@@ -87,11 +89,16 @@
   import {prefixStyle} from 'common/js/dom'
   import progressBar from 'base/progress-bar/progress-bar'
   import ProgressCircle from 'base/progress-circle/progress-circle'
+  import {playMode} from 'common/js/config'
+  import {shuffle} from 'common/js/util'
 
   const transform = prefixStyle('transform')
 
   export default {
     computed: {
+      iconMode() {
+        return this.mode === playMode.sequence ? 'icon-sequence' : this.mode === playMode.loop ? 'icon-loop' : 'icon-random'
+      },
       percent() {
         return this.currentTime / this.currentSong.duration
       },
@@ -112,7 +119,9 @@
         'playList',
         'currentSong',
         'playing',
-        'currentIndex'
+        'currentIndex',
+        'mode',
+        'sequenceList'
       ])
     },
     data() {
@@ -123,6 +132,40 @@
       }
     },
     methods: {
+      end() {
+        if (this.mode === playMode.loop) {
+          // 单独处理单曲循环的问题
+          this.loop()
+        } else {
+          this.next()
+        }
+      },
+      loop() {
+        // 直接把当前时间设置成0然后点击播放就可以了
+        this.$refs.audio.currentTime = 0
+        this.$refs.audio.play()
+      },
+      changeMode() {
+        // 根据点击改变模式 或者根据需要改变当前的播放列表
+        // 保证一定不会超过3
+        const mode = (this.mode + 1) % 3
+        this.setPlayMode(mode)
+        let list = null
+        if (mode === playMode.random) {
+          list = shuffle(this.sequenceList)
+        } else {
+          list = this.sequenceList
+        }
+        this.resetCurrentIndex(list)
+        this.setPlaylist(list)
+      },
+      resetCurrentIndex(list) {
+        // 防止改变list改变了当前播放的歌曲
+        let index = list.findIndex((item) => {
+          return item.id === this.currentSong.id
+        })
+        this.setCurrentIndex(index)
+      },
       onProgressBarChange(percent) {
         this.$refs.audio.currentTime = this.currentSong.duration * percent
       },
@@ -247,11 +290,16 @@
       ...mapMutations({
         setFullScreen: 'SET_FULL_SCREEN',
         setPlaying: 'SET_PLAYING_STATE',
-        setCurrentIndex: 'SET_CURRENT_INDEX'
+        setCurrentIndex: 'SET_CURRENT_INDEX',
+        setPlayMode: 'SET_PLAY_MODE',
+        setPlaylist: 'SET_PLAYLIST'
       })
     },
     watch: {
-      currentSong(newSong) {
+      currentSong(oldSong, newSong) {
+        if (oldSong.id === newSong.id) {
+          return
+        }
         this.$nextTick(() => {
           this.$refs.audio.play()
         })
