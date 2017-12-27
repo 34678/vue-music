@@ -43,6 +43,7 @@
   import Slider from 'base/slider/slider'
   import Scroll from 'base/scroll/scroll'
   import Loading from 'base/loading/loading'
+  import {playlistMixin} from 'common/js/mixin'
   function sleep(numberMillis) {
     var now = new Date();
     var exitTime = now.getTime() + numberMillis;
@@ -53,6 +54,7 @@
     }
   }
   export default {
+    mixins: [playlistMixin],
     data() {
       return {
         recommends: [],
@@ -68,6 +70,12 @@
 
     },
     methods: {
+      handlePlaylist(playlist) {
+        const bottom = playlist.length > 0 ? '60px' : ''
+
+        this.$refs.recommend.style.bottom = bottom
+        this.$refs.scroll.refresh()
+      },
       _getRecommend() {
         getRecomend().then((res) => {
           if (res.code === ERR_OK) {
