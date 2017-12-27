@@ -24,6 +24,16 @@
               </div>
             </div>
           </div>
+          <div class="middle-r" ref="lyricList" >
+            <div class="lyric-wrapper">
+              <div v-if="currentLyric">
+                <p ref="lyricLine"
+                   class="text"
+                   v-for="(line,index) in currentLyric.lines">{{line.txt}}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="bottom">
           <div class="dot-wrapper">
@@ -91,6 +101,7 @@
   import ProgressCircle from 'base/progress-circle/progress-circle'
   import {playMode} from 'common/js/config'
   import {shuffle} from 'common/js/util'
+  import Lyric from 'lyric-parser'
 
   const transform = prefixStyle('transform')
 
@@ -128,10 +139,18 @@
       return {
         songReady: false,
         currentTime: 0,
-        radius: 32
+        radius: 32,
+        playingLyric: ''
       }
     },
     methods: {
+      getLyric() {
+        // getLyric()返回了一个promise 所以使用then进行下面的操作 并且拿到数据
+        this.currentSong.getLyric().then((lyric) => {
+          this.currentLyric = new Lyric(lyric)
+          console.log(this.currentLyric)
+        })
+      },
       end() {
         if (this.mode === playMode.loop) {
           // 单独处理单曲循环的问题
@@ -302,6 +321,7 @@
         }
         this.$nextTick(() => {
           this.$refs.audio.play()
+          this.getLyric()
         })
       },
       playing(newPlaying) {
