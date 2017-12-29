@@ -21,7 +21,7 @@
             :probe-type="probeType"
             @scroll="scroll">
       <div class="song-list-wrapper">
-        <song-list :songs="songs" @select="selectItem"></song-list>
+        <song-list :rank="rank" :songs="songs" @select="selectItem"></song-list>
       </div>
       <div v-show="!songs.length" class="loading-container">
         <loading></loading>
@@ -55,6 +55,10 @@
       songs: {
         type: Array,
         default: []
+      },
+      rank: {
+        type: Boolean,
+        default: false
       }
     },
     data() {
