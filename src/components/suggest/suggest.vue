@@ -1,20 +1,163 @@
 <template>
-  <div ref="suggest" class="suggest">
+  <scroll ref="suggest"
+          class="suggest"
+          :data="result"
+          :pullup="pullup"
+          :beforeScroll="beforeScroll"
+          @scrollToEnd="searchMore"
+          @beforeScroll="listScroll">
     <ul class="suggest-list">
-      <li class="suggest-item" >
+      <li @click="selectItem(item)" class="suggest-item" v-for="item in result">
         <div class="icon">
-          <i ></i>
+          <i :class="getIconCls(item)"></i>
         </div>
         <div class="name">
-          <p class="text" ></p>
+          <p class="text" v-html="getDisplayName(item)"></p>
         </div>
       </li>
+      <loading v-show="hasMore" title=""></loading>
     </ul>
-  </div>
+    <div v-show="!hasMore && !result.length" class="no-result-wrapper">
+      <no-result title="抱歉，暂无搜索结果"></no-result>
+    </div>
+  </scroll>
 </template>
 
 <script type="text/ecmascript-6">
+  import {search} from 'api/search'
+  import {ERR_OK} from 'api/config'
+  import {createSong} from 'common/js/song'
+  import Scroll from 'base/scroll/scroll'
+  import Loading from 'base/loading/loading'
+  import Singer from 'common/js/singer'
+  import {mapMutations, mapActions} from 'vuex'
+  import NoResult from 'base/no-result/no-result'
+
+  const perpage = 20
+  const TYPE_SINGER = 'singer'
+
   export default {
+    data() {
+      return {
+        page: 1,
+        hasMore: true,
+        result: [],
+        pullup: true,
+        beforeScroll: true
+      }
+    },
+    props: {
+      query: {
+        type: String,
+        default: ''
+      },
+      showSinger: {
+        type: Boolean,
+        default: true
+      }
+    },
+    methods: {
+      listScroll() {
+        this.$emit('listScroll')
+      },
+      selectItem(item) {
+        if (item.type === TYPE_SINGER) {
+          // 进入歌手详情页
+          const singer = new Singer({
+            mid: item.singermid,
+            id: item.singerid,
+            name: item.singername
+          })
+          this.$router.push({
+            path: `/search/${singer.id}`
+          })
+          this.setSinger(singer)
+        } else {
+          // 在当前的播放列表插入了一首歌 需要一个action 因为改变了三个state属性
+          this.insertSong(item)
+        }
+        this.$emit('select', item)
+      },
+      searchMore() {
+        if (!this.hasMore) {
+          return
+        }
+        this.page++
+        search(this.query, this.page, this.showSinger, perpage).then((res) => {
+          // 要拼接起来 不能简单的concat
+          this.result = this.result.concat(this._genResult(res.data))
+          this._checkMore(res.data)
+        })
+      },
+      getIconCls(item) {
+        if (item.type === TYPE_SINGER) {
+          return 'icon-mine'
+        } else {
+          return 'icon-music'
+        }
+      },
+      getDisplayName(item) {
+        if (item.type === TYPE_SINGER) {
+          return item.singername
+        } else {
+          return `${item.name}-${item.singer}`
+        }
+      },
+      search() {
+        this.page = 1
+        this.hasMore = true
+        this.$refs.suggest.scrollTo(0, 0)
+        search(this.query, this.page, this.showSinger, perpage).then((res) => {
+          if (res.code === ERR_OK) {
+            this.result = this._genResult(res.data)
+            this._checkMore(res.data)
+          }
+        })
+      },
+      _genResult(data) {
+        let ret = []
+        // 不是很懂这一段
+        if (data.zhida && data.zhida.singerid) {
+          ret.push({...data.zhida, ...{type: TYPE_SINGER}})
+        }
+        if (data.song) {
+          ret = ret.concat(this._normalizeSongs(data.song.list))
+        }
+        return ret
+      },
+      _normalizeSongs(list) {
+        let ret = []
+        list.forEach((musicData) => {
+          if (musicData.songid && musicData.albumid) {
+            ret.push(createSong(musicData))
+          }
+        })
+        return ret
+      },
+      _checkMore(data) {
+        const song = data.song
+        // 自己计算有没有加载完全部的数据 为什么是当前页 不是当前页面的前一夜？？？
+        if (!song.list.length || (song.curnum + song.curpage * perpage) > song.totalnum) {
+          this.hasMore = false
+        }
+      },
+      ...mapMutations({
+        setSinger: 'SET_SINGER'
+      }),
+      ...mapActions([
+        'insertSong'
+      ])
+    },
+    watch: {
+      query(newQuery) {
+        this.search(newQuery)
+      }
+    },
+    components: {
+      Scroll,
+      Loading,
+      NoResult
+    }
   }
 </script>
 

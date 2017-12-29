@@ -1,9 +1,9 @@
 <template>
   <div class="search">
     <div class="search-box-wrapper">
-      <search-box ref="searchBox"></search-box>
+      <search-box ref="searchBox" @query="onQueryChange"></search-box>
     </div>
-    <div class="shortcut-wrapper">
+    <div class="shortcut-wrapper" v-show="!query">
       <div class="shortcut">
         <div class="hot-key">
           <h1 class="title">热门搜索</h1>
@@ -15,6 +15,10 @@
         </div>
       </div>
     </div>
+    <div class="search-result" ref="searchResult" v-show="query">
+      <suggest @listScroll="blurInput" ref="suggest" :query="query"></suggest>
+    </div>
+    <router-view></router-view>
   </div>
 </template>
 
@@ -22,20 +26,29 @@
   import SearchBox from 'base/search-box/search-box'
   import {getHotKey} from 'api/search'
   import {ERR_OK} from 'api/config'
+  import Suggest from 'components/suggest/suggest'
 
   export default {
     components: {
-      SearchBox
+      SearchBox,
+      Suggest
     },
     created() {
       this._getHotKey()
     },
     data() {
       return {
-        hotKey: []
+        hotKey: [],
+        query: ''
       }
     },
     methods: {
+      blurInput() {
+        this.$refs.searchBox.blur()
+      },
+      onQueryChange(query) {
+        this.query = query
+      },
       _getHotKey() {
         getHotKey().then((res) => {
           if (res.code === ERR_OK) {
@@ -60,7 +73,7 @@
       margin: 20px
     .shortcut-wrapper
       position: fixed
-      top: 178px
+      top: 216px
       bottom: 0
       width: 100%
       .shortcut
@@ -99,6 +112,6 @@
     .search-result
       position: fixed
       width: 100%
-      top: 178px
+      top: 216px
       bottom: 0
 </style>
