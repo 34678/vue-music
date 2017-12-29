@@ -4,20 +4,33 @@
       <search-box ref="searchBox" @query="onQueryChange"></search-box>
     </div>
     <div class="shortcut-wrapper" v-show="!query">
-      <div class="shortcut">
-        <div class="hot-key">
-          <h1 class="title">热门搜索</h1>
-          <ul>
-            <li class="item" @click="addQuery(item.k)" v-for="item in hotKey">
-              <span>{{item.k}}</span>
-            </li>
-          </ul>
+      <scroll class="shortcut" :data="shortcut">
+        <div>
+          <div class="hot-key">
+            <h1 class="title">热门搜索</h1>
+            <ul>
+              <li class="item" @click="addQuery(item.k)" v-for="item in hotKey">
+                <span>{{item.k}}</span>
+              </li>
+            </ul>
+          </div>
         </div>
-      </div>
+
+        <div class="search-history" v-show="searchHistory.length">
+          <h1 class="title">
+            <span class="text">搜索历史</span>
+            <span @click="showConfirm" class="clear">
+                <i class="icon-clear"></i>
+              </span>
+          </h1>
+          <search-list @delete="deleteSearchHistory" @select="addQuery" :searches="searchHistory"></search-list>
+        </div>
+      </scroll>
     </div>
     <div class="search-result" ref="searchResult" v-show="query">
-      <suggest @listScroll="blurInput" ref="suggest" :query="query"></suggest>
+      <suggest @select="saveSearch" @listScroll="blurInput" ref="suggest" :query="query"></suggest>
     </div>
+    <confirm ref="confirm" @confirm="clearSearchHistory" text="是否清空所有搜索历史" confirmBtnText="清空"></confirm>
     <router-view></router-view>
   </div>
 </template>
@@ -27,11 +40,18 @@
   import {getHotKey} from 'api/search'
   import {ERR_OK} from 'api/config'
   import Suggest from 'components/suggest/suggest'
+  import {mapActions, mapGetters} from 'vuex'
+  import SearchList from 'base/search-list/search-list'
+  import Scroll from 'base/scroll/scroll'
+  import Confirm from 'base/confirm/confirm'
 
   export default {
     components: {
       SearchBox,
-      Suggest
+      Suggest,
+      SearchList,
+      Scroll,
+      Confirm
     },
     created() {
       this._getHotKey()
@@ -43,6 +63,12 @@
       }
     },
     methods: {
+      showConfirm() {
+        this.$refs.confirm.show()
+      },
+      saveSearch() {
+        this.saveSearchHistory(this.query)
+      },
       blurInput() {
         this.$refs.searchBox.blur()
       },
@@ -59,7 +85,20 @@
       },
       addQuery(query) {
         this.$refs.searchBox.setQuery(query)
-      }
+      },
+      ...mapActions([
+        'saveSearchHistory',
+        'deleteSearchHistory',
+        'clearSearchHistory'
+      ])
+    },
+    computed: {
+      shortcut() {
+        return this.hotKey.concat(this.searchHistory)
+      },
+      ...mapGetters([
+        'searchHistory'
+      ])
     }
   }
 </script>

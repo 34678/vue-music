@@ -1,6 +1,7 @@
 import * as types from './types'
 import {shuffle} from 'common/js/util'
 import {playMode} from 'common/js/config'
+import {saveSearch, deleteSearch, clearSearch} from 'common/js/cache'
 
 function findIndex(list, song) {
   return list.findIndex((item) => {
@@ -31,7 +32,9 @@ export const randomPlay = function ({commit}, {list}) {
   commit(types.SET_FULL_SCREEN, true)
   commit(types.SET_PLAYING_STATE, true)
 }
-
+export const saveSearchHistory = function ({commit}, query) {
+  commit(types.SET_SEARCH_HISTORY, saveSearch(query))
+}
 export const insertSong = function ({commit, state}, song) {
   // 在当前的播放列表插入一首歌需要改变的三个属性
   // 使用playlist的副本 就不会造成在mutation之外修改state的属性
@@ -80,4 +83,12 @@ export const insertSong = function ({commit, state}, song) {
 
   commit(types.SET_FULL_SCREEN, true)
   commit(types.SET_PLAYING_STATE, true)
+}
+
+export const deleteSearchHistory = function ({commit}, query) {
+  commit(types.SET_SEARCH_HISTORY, deleteSearch(query))
+}
+
+export const clearSearchHistory = function ({commit}) {
+  commit(types.SET_SEARCH_HISTORY, clearSearch())
 }
