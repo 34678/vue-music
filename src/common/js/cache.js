@@ -5,6 +5,24 @@ const SEARCH_KEY = '__search__'
 // 最多存储这么多的数据 超过的话把最早的数据踢出去
 const SEARCH_MAX_LEN = 15
 
+const PLAY_KEY = '__play__'
+const PLAY_MAX_LEN = 200
+
+// 播放历史的存取
+export function savePlay(song) {
+  let songs = storage.get(PLAY_KEY, [])
+  insertArray(songs, song, (item) => {
+    return song.id === item.id
+  }, PLAY_MAX_LEN)
+    // 把这个忘了
+  storage.set(PLAY_KEY, songs)
+  return songs
+}
+
+export function loadPlay() {
+  return storage.get(PLAY_KEY, [])
+}
+
 export function clearSearch() {
   storage.remove(SEARCH_KEY)
   return []

@@ -13,6 +13,15 @@
       </div>
       <div class="shortcut" v-show="!query">
         <switches :switches="switches" :currentIndex="currentIndex" @switch="switchItem"></switches>
+        <div class="list-wrapper">
+          <scroll ref="songList" :data="playHistory">
+            <div class="list-inner">
+              <song-list :songs="playHistory" @select="selectSong">
+
+              </song-list>
+            </div>
+          </scroll>
+        </div>
       </div>
       <div class="search-result" v-show="query">
         <suggest @listscroll="blurInput" :query="query" :showSinger="showSinger" @select="selectSuggest"></suggest>
@@ -26,13 +35,26 @@
   import Suggest from 'components/suggest/suggest'
   import {searchMixin} from 'common/js/mixin'
   import Switches from 'base/switches/switches'
+  import {mapGetters, mapActions} from 'vuex'
+  import Scroll from 'base/scroll/scroll'
+  import SearchList from 'base/search-list/search-list'
+  import SongList from 'base/song-list/song-list'
+  import Song from 'common/js/song'
 
   export default {
+    computed: {
+      ...mapGetters([
+        'playHistory'
+      ])
+    },
     mixins: [searchMixin],
     components: {
+      SongList,
       SearchBox,
       Suggest,
-      Switches
+      Switches,
+      Scroll,
+      SearchList
     },
     data() {
       return {
@@ -50,6 +72,16 @@
       }
     },
     methods: {
+      ...mapActions([
+        'insertSong'
+      ]),
+      selectSong(song, index) {
+        // 因为第一个已经在当前的播放列表里面？
+        if (!index !== 0) {
+          // 存的时候是song对象 拿出来的时候属性还在 但是已经不是song对象
+          this.insertSong(new Song(song))
+        }
+      },
       switchItem(index) {
         this.currentIndex = index
       },
