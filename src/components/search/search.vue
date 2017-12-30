@@ -3,8 +3,8 @@
     <div class="search-box-wrapper">
       <search-box ref="searchBox" @query="onQueryChange"></search-box>
     </div>
-    <div class="shortcut-wrapper" v-show="!query">
-      <scroll class="shortcut" :data="shortcut">
+    <div class="shortcut-wrapper" ref="shortcutWrapper" v-show="!query">
+      <scroll class="shortcut" ref="shortcut" :data="shortcut">
         <div>
           <div class="hot-key">
             <h1 class="title">热门搜索</h1>
@@ -14,16 +14,15 @@
               </li>
             </ul>
           </div>
-        </div>
-
-        <div class="search-history" v-show="searchHistory.length">
-          <h1 class="title">
-            <span class="text">搜索历史</span>
-            <span @click="showConfirm" class="clear">
+          <div class="search-history" v-show="searchHistory.length">
+            <h1 class="title">
+              <span class="text">搜索历史</span>
+              <span @click="showConfirm" class="clear">
                 <i class="icon-clear"></i>
               </span>
-          </h1>
-          <search-list @delete="deleteSearchHistory" @select="addQuery" :searches="searchHistory"></search-list>
+            </h1>
+            <search-list @delete="deleteSearchHistory" @select="addQuery" :searches="searchHistory"></search-list>
+          </div>
         </div>
       </scroll>
     </div>
@@ -44,8 +43,19 @@
   import SearchList from 'base/search-list/search-list'
   import Scroll from 'base/scroll/scroll'
   import Confirm from 'base/confirm/confirm'
+  import {playlistMixin} from 'common/js/mixin'
 
   export default {
+    mixins: [playlistMixin],
+    watch: {
+      query(newQuery) {
+        if (!newQuery) {
+          setTimeout(() => {
+            this.$refs.shortcut.refresh()
+          }, 20)
+        }
+      }
+    },
     components: {
       SearchBox,
       Suggest,
@@ -63,6 +73,15 @@
       }
     },
     methods: {
+      handlePlaylist(playlist) {
+        const bottom = playlist.length > 0 ? '60px' : 0
+        // 搜索结果组件
+        this.$refs.searchResult.style.bottom = bottom
+        this.$refs.suggest.refresh()
+        // 搜索历史热门搜索组件
+        this.$refs.shortcutWrapper.style.bottom = bottom
+        this.$refs.shortcut.refresh()
+      },
       showConfirm() {
         this.$refs.confirm.show()
       },
