@@ -35,7 +35,7 @@
     methods: {
       _getDetail() {
         if (!this.singer.id) {
-          this.singer.id = '60505'
+          this.$router.push('/singer')
         }
         getSingerDetail(this.singer.id).then((res) => {
           if (res.code === ERR_OK) {
