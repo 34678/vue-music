@@ -1,26 +1,26 @@
 <template>
-  <transition name="list-fade" >
+  <transition name="list-fade">
     <div class="playlist" @click="hide" v-show="showFlag">
       <!--这里防止内层的点击事件冒泡上来-->
       <div class="list-wrapper" @click.stop>
         <div class="list-header">
           <h1 class="title">
-            <i class="icon"></i>
-            <span class="text"></span>
-            <span class="clear"><i class="icon-clear"></i></span>
+            <i class="icon" :class="iconMode" @click="changeMode"></i>
+            <span class="text">{{modeText}}</span>
+            <span class="clear" @click="showConfirm"><i class="icon-clear"></i></span>
           </h1>
         </div>
         <!--中间部分的歌曲列表-->
         <scroll :data="sequenceList" ref="listContent" class="list-content">
           <transition-group ref="list" name="list" tag="ul">
-              <li :key="item.id" class="item" :class="getCurrentIcon(item)" v-for="(item,index) in sequenceList"
-                 @click="selectItem(item,index)">
-                <i class="current" :class="getCurrentIcon(item)"></i>
-                <span class="text">{{item.name}}</span>
-                <span class="like">
+            <li :key="item.id" class="item" :class="getCurrentIcon(item)" v-for="(item,index) in sequenceList"
+                @click="selectItem(item,index)">
+              <i class="current" :class="getCurrentIcon(item)"></i>
+              <span class="text">{{item.name}}</span>
+              <span class="like">
                 <i></i>
               </span>
-                <span class="delete">
+              <span class="delete" @click.stop="deleteOne(item)">
                 <i class="icon-delete"></i>
               </span>
             </li>
@@ -36,22 +36,29 @@
           <span>关闭</span>
         </div>
       </div>
+      <confirm ref="confirm" @confirm="confirmClear" text="是否清空播放列表" confirmBtnText="清空"></confirm>
     </div>
   </transition>
 </template>
 
 <script type="text/ecmascript-6">
-  import {mapGetters, mapMutations} from 'vuex'
+  import {mapGetters, mapActions} from 'vuex'
   import Scroll from 'base/scroll/scroll'
   import {playMode} from 'common/js/config'
+  import Confirm from 'base/confirm/confirm'
+  import {playerMixin} from 'common/js/mixin'
 
   export default {
+    mixins: [playerMixin],
     data() {
       return {
         showFlag: false
       }
     },
     computed: {
+      modeText() {
+        return this.mode === playMode.sequence ? '顺序播放' : this.mode === playMode.random ? '随机播放' : '单曲循环'
+      },
       ...mapGetters([
         'sequenceList',
         'currentSong',
@@ -60,6 +67,21 @@
       ])
     },
     methods: {
+      showConfirm() {
+        this.$refs.confirm.show()
+      },
+      confirmClear() {
+        this.deleteSongList()
+        this.hide()
+      },
+      deleteOne(item) {
+        this.deleteSong(item)
+        // 不然如果在选择一首歌会突然跳出来 因为之前没有被正确关掉 只是因为外层的player的playlist长度
+        // 变成0了 而不是palylist自己想隐藏
+        if (!this.playList.length) {
+          this.hide()
+        }
+      },
       scrollToCurrent(current) {
         const index = this.sequenceList.findIndex((song) => {
           return song.id === current.id
@@ -93,13 +115,14 @@
       hide() {
         this.showFlag = false
       },
-      ...mapMutations({
-        setCurrentIndex: 'SET_CURRENT_INDEX',
-        setPlayingState: 'SET_PLAYING_STATE'
-      })
+      ...mapActions([
+        'deleteSong',
+        'deleteSongList'
+      ])
     },
     components: {
-      Scroll
+      Scroll,
+      Confirm
     },
     watch: {
       currentSong(newSong, oldSong) {

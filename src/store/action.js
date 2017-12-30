@@ -35,6 +35,31 @@ export const randomPlay = function ({commit}, {list}) {
 export const saveSearchHistory = function ({commit}, query) {
   commit(types.SET_SEARCH_HISTORY, saveSearch(query))
 }
+export const deleteSong = function ({commit, state}, song) {
+  let playlist = state.playList.slice()
+  let sequenceList = state.sequenceList.slice()
+  let currentIndex = state.currentIndex
+// 删除播放列表里面的歌曲（两个播放列表）
+  let fpIndex = findIndex(playlist, song)
+  playlist.splice(fpIndex, 1)
+  let sIndex = findIndex(sequenceList, song)
+  sequenceList.splice(sIndex, 1)
+
+  // 当前播放歌曲在删除的歌曲的后面  或者他是最后一首歌（这是什么特殊情况？）
+  if (currentIndex > fpIndex || currentIndex === playlist.length) {
+    currentIndex--
+  }
+
+  commit(types.SET_PLAYLIST, playlist)
+  commit(types.SET_SEQUENCE_LIST, sequenceList)
+  commit(types.SET_CURRENT_INDEX, currentIndex)
+
+  if (!playlist.length) {
+    commit(types.SET_PLAYING_STATE, false)
+  } else {
+    commit(types.SET_PLAYING_STATE, true)
+  }
+}
 export const insertSong = function ({commit, state}, song) {
   // 在当前的播放列表插入一首歌需要改变的三个属性
   // 使用playlist的副本 就不会造成在mutation之外修改state的属性
@@ -91,4 +116,11 @@ export const deleteSearchHistory = function ({commit}, query) {
 
 export const clearSearchHistory = function ({commit}) {
   commit(types.SET_SEARCH_HISTORY, clearSearch())
+}
+
+export const deleteSongList = function ({commit}) {
+  commit(types.SET_CURRENT_INDEX, -1)
+  commit(types.SET_PLAYLIST, [])
+  commit(types.SET_SEQUENCE_LIST, [])
+  commit(types.SET_PLAYING_STATE, false)
 }
