@@ -43,10 +43,10 @@
   import SearchList from 'base/search-list/search-list'
   import Scroll from 'base/scroll/scroll'
   import Confirm from 'base/confirm/confirm'
-  import {playlistMixin} from 'common/js/mixin'
+  import {playlistMixin, searchMixin} from 'common/js/mixin'
 
   export default {
-    mixins: [playlistMixin],
+    mixins: [playlistMixin, searchMixin],
     watch: {
       query(newQuery) {
         if (!newQuery) {
@@ -68,8 +68,7 @@
     },
     data() {
       return {
-        hotKey: [],
-        query: ''
+        hotKey: []
       }
     },
     methods: {
@@ -85,15 +84,6 @@
       showConfirm() {
         this.$refs.confirm.show()
       },
-      saveSearch() {
-        this.saveSearchHistory(this.query)
-      },
-      blurInput() {
-        this.$refs.searchBox.blur()
-      },
-      onQueryChange(query) {
-        this.query = query
-      },
       _getHotKey() {
         getHotKey().then((res) => {
           if (res.code === ERR_OK) {
@@ -102,12 +92,7 @@
           }
         })
       },
-      addQuery(query) {
-        this.$refs.searchBox.setQuery(query)
-      },
       ...mapActions([
-        'saveSearchHistory',
-        'deleteSearchHistory',
         'clearSearchHistory'
       ])
     },
