@@ -5,7 +5,8 @@ import {shuffle} from 'common/js/util'
 export const searchMixin = {
   data() {
     return {
-      query: ''
+      query: '',
+      refreshDelay: 120
     }
   },
   computed: {

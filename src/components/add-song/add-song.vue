@@ -14,11 +14,16 @@
       <div class="shortcut" v-show="!query">
         <switches :switches="switches" :currentIndex="currentIndex" @switch="switchItem"></switches>
         <div class="list-wrapper">
-          <scroll ref="songList" :data="playHistory">
+          <scroll class="list-scroll" ref="songList" :data="playHistory" v-if="currentIndex===0" >
             <div class="list-inner">
               <song-list :songs="playHistory" @select="selectSong">
-
               </song-list>
+            </div>
+          </scroll>
+          <scroll ref="searchList" v-if="currentIndex===1" class="list-scroll"
+                  :data="searchHistory" :refreshDelay="refreshDelay">
+            <div class="list-inner">
+              <search-list @delete="deleteSearchHistory" @select="addQuery" :searches="searchHistory"></search-list>
             </div>
           </scroll>
         </div>
@@ -26,6 +31,12 @@
       <div class="search-result" v-show="query">
         <suggest @listscroll="blurInput" :query="query" :showSinger="showSinger" @select="selectSuggest"></suggest>
       </div>
+      <top-tip ref="topTip">
+        <div class="tip-title">
+          <i class="icon-ok"></i>
+          <span class="text">1首歌曲已经添加到播放列表</span>
+        </div>
+      </top-tip>
     </div>
   </transition>
 </template>
@@ -40,6 +51,7 @@
   import SearchList from 'base/search-list/search-list'
   import SongList from 'base/song-list/song-list'
   import Song from 'common/js/song'
+  import TopTip from 'base/top-tip/top-tip'
 
   export default {
     computed: {
@@ -54,7 +66,8 @@
       Suggest,
       Switches,
       Scroll,
-      SearchList
+      SearchList,
+      TopTip
     },
     data() {
       return {
@@ -81,15 +94,24 @@
           // 存的时候是song对象 拿出来的时候属性还在 但是已经不是song对象
           this.insertSong(new Song(song))
         }
+        this.$refs.topTip.show()
       },
       switchItem(index) {
         this.currentIndex = index
       },
       selectSuggest() {
+        this.$refs.topTip.show()
         this.saveSearch()
       },
       show() {
         this.showFlag = true
+        setTimeout(() => {
+          if (this.currentIndex === 0) {
+            this.$refs.songList.refresh()
+          } else {
+            this.$refs.searchList.refresh()
+          }
+        })
       },
       hide() {
         this.showFlag = false

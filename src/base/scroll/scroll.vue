@@ -100,6 +100,7 @@
       data() {
         setTimeout(() => {
           this.refresh()
+          console.log(this.refreshDelay)
         }, this.refreshDelay)
       }
     }

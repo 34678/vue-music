@@ -11,7 +11,7 @@
           </h1>
         </div>
         <!--中间部分的歌曲列表-->
-        <scroll :data="sequenceList" ref="listContent" class="list-content">
+        <scroll :data="sequenceList" ref="listContent" class="list-content" :refreshDelay="refreshDelay" >
           <transition-group ref="list" name="list" tag="ul">
             <li :key="item.id" class="item" :class="getCurrentIcon(item)" v-for="(item,index) in sequenceList"
                 @click="selectItem(item,index)">
@@ -54,7 +54,8 @@
     mixins: [playerMixin],
     data() {
       return {
-        showFlag: false
+        showFlag: false,
+        refreshDelay: 120
       }
     },
     computed: {
